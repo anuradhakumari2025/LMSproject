@@ -46,11 +46,13 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div>
-          <h2 className="pb-4 text-lg font-medium text-white">Latest Enrolments</h2>
+        <div className="my-6">
+          <h2 className="pb-6 text-xl font-medium text-white">
+            Latest Enrolments
+          </h2>
           <div className="flex flex-col items-center max-w-4xl w-full overflow-hidden rounded-md bg-slate-800 border border-gray-200">
             <table className="table-fixed md:table-auto w-full overflow-hidden">
-              <thead className="text-gray-100 border-b border-gray-500/20 text-sm text-left">
+              <thead className="text-gray-100 border-b border-gray-100 text-sm text-left">
                 <tr>
                   <th className="px-4 py-3 font-semibold text-center hidden sm:table-cell">
                     #
@@ -61,7 +63,7 @@ const Dashboard = () => {
               </thead>
               <tbody className="text-sm text-gray-300">
                 {dashboardData.enrolledStudentsData.map((item, index) => (
-                  <tr key={index} className="border-b border-gray-500/20">
+                  <tr key={index} className="border-b border-gray-400">
                     <td className="px-4 py-3 text-center hidden sm:table-cell">
                       {index + 1}
                     </td>
