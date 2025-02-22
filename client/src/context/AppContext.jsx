@@ -6,15 +6,26 @@ import humanizeDuration from "humanize-duration";
 export const AppContext = createContext();
 export const AppContextProvider = (props) => {
   const currency = import.meta.env.VITE_CURRENCY;
+
   const [allCourses, setAllCourses] = useState([]);
+  const [enrolledCourses, setEnrolledCourses] = useState([]);
+
   //fetch all courses
   const fetchAllCourses = async () => {
     setAllCourses(dummyCourses);
   };
+
+  const fetchUserEnrolledCourses = async () => {
+    setEnrolledCourses(dummyCourses);
+  };
+
   useEffect(() => {
     fetchAllCourses();
+    fetchUserEnrolledCourses();
   }, []);
+
   const navigate = useNavigate();
+
   const calculateRating = (course) => {
     if (course.courseRatings.length === 0) return 0;
     let totalRating = 0;
@@ -23,7 +34,9 @@ export const AppContextProvider = (props) => {
     });
     return totalRating / course.courseRatings.length;
   };
+
   const [isEducator, setIsEducator] = useState(true);
+
   const calculateChapterTime = (chapter) => {
     let time = 0;
     chapter.chapterContent.map((lecture) => (time += lecture.lectureDuration));
@@ -47,6 +60,7 @@ export const AppContextProvider = (props) => {
     });
     return totalLectures;
   };
+
   const value = {
     currency,
     allCourses,
@@ -56,7 +70,9 @@ export const AppContextProvider = (props) => {
     setIsEducator,
     calculateChapterTime,
     calculateCourseDuration,
-    calculateNoOfLectures
+    calculateNoOfLectures,
+    enrolledCourses,
+    fetchUserEnrolledCourses,
   };
   return (
     <AppContext.Provider value={value}>{props.children}</AppContext.Provider>

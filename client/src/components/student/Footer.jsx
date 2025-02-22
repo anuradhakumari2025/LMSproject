@@ -35,7 +35,6 @@ const Footer = () => {
             Subscribe to our newsletter
           </h2>
           <p className="text-sm text-white/80">
-            {" "}
             The Latest news,articles, and resources , sent to your inbox weekly.
           </p>
           <div className="flex items-center gap-4 pt-4">
@@ -45,7 +44,6 @@ const Footer = () => {
               placeholder="Enter your email"
             />
             <button className="bg-blue-600 rounded w-24 h-9 text-white">
-              {" "}
               Subscribe
             </button>
           </div>
