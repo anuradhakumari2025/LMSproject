@@ -11,6 +11,9 @@ const StudentsEnrolled = () => {
     fetchEnrolledStudents();
   }, []);
   return enrolledStudents ? (
+
+    <>
+    <h1 className="px-10 text-white pt-8 text-xl font-semibold bg-slate-600">Students Enrolled</h1>
     <div className="bg-slate-600 min-h-screen p-5 flex flex-col items-start justify-between md:p-8 md:pb-0 pb-0 pt-8">
       <div className="flex flex-col items-center max-w-4xl w-full overflow-hidden rounded-md bg-slate-800 border border-gray-200">
         <table className="table-fixed md:table-auto w-full overflow-hidden">
@@ -47,6 +50,7 @@ const StudentsEnrolled = () => {
         </table>
       </div>
     </div>
+    </>
   ) : (
     <Loading />
   );

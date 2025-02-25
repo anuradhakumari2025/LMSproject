@@ -14,7 +14,7 @@ const MyCourses = () => {
   return courses ? (
     <div className="px-4 bg-slate-600 pt-8 pb-0 min-h-screen flex flex-col items-start justify-between md:p-8 md:pb-10">
       <div className="w-full px-4 pb-4">
-        <h2 className="pb-4 text-xl font-medium text-white">My Courses</h2>
+        <h2 className="pb-4 text-2xl font-medium text-white">My Courses</h2>
         <div className="flex flex-col items-center max-w-4xl w-full overflow-hidden rounded-md bg-slate-800 border border-white">
           <table className="md:table-auto table-fixed w-full overflow-hidden ">
             <thead className="text-gray-100 border-b border-gray-50 text-sm text-left">
@@ -38,7 +38,7 @@ const MyCourses = () => {
                       {course.courseTitle}
                     </span>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 md:px-6 py-3">
                     {currency}
                     {Math.floor(
                       course.enrolledStudents.length *
@@ -46,10 +46,12 @@ const MyCourses = () => {
                           (course.discount * course.coursePrice) / 100)
                     )}
                   </td>
-                  <td className="px-4 py-3 ">
+                  <td className="px-4 py-3 md:px-8">
                     {course.enrolledStudents.length}
                   </td>
-                  <td className="px-4 py-3">{new Date(course.createdAt).toLocaleDateString()}</td>
+                  <td className="px-4 py-3 md:px-5">
+                    {new Date(course.createdAt).toLocaleDateString()}
+                  </td>
                 </tr>
               ))}
             </tbody>
