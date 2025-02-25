@@ -24,7 +24,7 @@ connectDB();
 // app.use('/users', usersRouter);
 
 app.get('/',(req,res)=>{
-  res.send('hello world')
+  res.send('Hello Anuradha')
 })
 app.post('/clerk',express.json(),clerkWebhooks)
 
