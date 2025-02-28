@@ -16,7 +16,7 @@ const chapterSchema = new Schema({
   chapterTitle: { type: String, required: true },
   chapterId: { type: String, required: true },
   chapterOrder: { type: Number, required: true },
-  chapterContent:{lectureSchema}
+  chapterContent:[lectureSchema]
 }, {
   _id:false,
 });
