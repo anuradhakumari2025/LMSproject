@@ -1,5 +1,6 @@
 const {Webhook} = require('svix')
 const User = require('../models/User')
+const Stripe  = require('stripe')
 
 //API Controller function to Manage Clerk User with db
 module.exports.clerkWebhooks = async(req,res)=>{
@@ -48,4 +49,20 @@ module.exports.clerkWebhooks = async(req,res)=>{
   } catch (error) {
     res.json({success:false,message:error.message})
   }
+}
+
+const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY)
+
+module.exports.stripeWebhooks = async(req,res)=>{
+  const sig = request.headers['stripe-signature']
+  let event;
+  try {
+    event = Stripe.Webhook.construct_event(
+      request.body, sig, process.env.STRIPE_WEBHOOK_SECRET
+    )
+  } catch (error) {
+    console.log(error)
+    res.status(400).send(`Webhook Error: ${error.message}`)
+  }
+
 }

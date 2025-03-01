@@ -10,7 +10,7 @@ const purchaseSchema = new Schema(
       required: true,
     },
     userId: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: String,
       ref: "User",
       required: true,
     },
