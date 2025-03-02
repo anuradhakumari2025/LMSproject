@@ -55,7 +55,7 @@ module.exports.clerkWebhooks = async (req, res) => {
 const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 module.exports.stripeWebhooks = async (req, res) => {
-  const sig = request.headers["stripe-signature"];
+  const sig = req.headers["stripe-signature"];
   let event;
   try {
     event = Stripe.Webhook.construct_event(
