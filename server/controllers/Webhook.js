@@ -24,7 +24,7 @@ module.exports.clerkWebhooks = async (req, res) => {
           imageUrl: data.image_url,
         };
         await User.create(userData);
-        res.JSON({});
+        res.json({});
         break;
       }
       case "user.updated": {
@@ -34,13 +34,13 @@ module.exports.clerkWebhooks = async (req, res) => {
           imageUrl: data.image_url,
         };
         await User.findByIdAndUpdate(data.id, userData);
-        res.JSON({});
+        res.json({});
         break;
       }
 
       case "user.deleted": {
         await User.findByIdAndDelete(data.id);
-        res.JSON({});
+        res.json({});
         break;
       }
 
@@ -65,7 +65,7 @@ module.exports.stripeWebhooks = async (req, res) => {
     );
   } catch (error) {
     console.log(error);
-    res.status(400).send(`Webhook Error: ${error.message}`);
+    return res.status(400).send(`Webhook Error: ${error.message}`);
   }
 
   // Handle the event
@@ -76,18 +76,26 @@ module.exports.stripeWebhooks = async (req, res) => {
       const session = await stripeInstance.checkout.sessions.list({
         payment_intent: paymentIntentId,
       });
-      const {purchaseId }  = session.data[0].metadata;
+
+      console.log(session);
+      const { purchaseId } = session.data[0].metadata;
+
+      console.log(purchaseId);
+
       const purchaseData = await Purchase.findById(purchaseId);
       const userData = await User.findById(purchaseData.userId);
-      const courseData = await Course.findById(purchaseData.courseId.toString());
+      const courseData = await Course.findById(
+        purchaseData.courseId.toString()
+      );
       courseData.enrolledStudents.push(userData);
       await courseData.save();
 
       userData.enrolledCourses.push(courseData._id);
       await userData.save();
-
+      console.log("purchase data before save ", purchaseData);
       purchaseData.status = "completed";
       await purchaseData.save();
+      console.log("purchase data after save ", purchaseData);
       break;
     }
     case "payment_intent.payment_failed": {
@@ -96,7 +104,7 @@ module.exports.stripeWebhooks = async (req, res) => {
       const session = await stripeInstance.checkout.sessions.list({
         payment_intent: paymentIntentId,
       });
-      const {purchaseId }  = session.data[0].metadata;
+      const { purchaseId } = session.data[0].metadata;
       const purchaseData = await Purchase.findById(purchaseId);
       purchaseData.status = "failed";
       await purchaseData.save();
