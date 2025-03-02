@@ -63,21 +63,31 @@ module.exports.stripeWebhooks = async (req, res) => {
       sig,
       process.env.STRIPE_WEBHOOK_SECRET
     );
+    console.log("✅ Webhook verified:", event.type);
   } catch (error) {
     console.log(error);
     return res.status(400).send(`Webhook Error: ${error.message}`);
   }
+  console.log("🔄 Processing event:", event.type);
 
   // Handle the event
   switch (event.type) {
     case "payment_intent.succeeded": {
+      console.log("💰 Payment succeeded!");
+
       const paymentIntent = event.data.object;
       const paymentIntentId = paymentIntent.id;
+
       const session = await stripeInstance.checkout.sessions.list({
         payment_intent: paymentIntentId,
       });
 
-      console.log(session);
+      console.log("📝 Session Data:", session);
+
+      if (!session.data.length) {
+        console.error("❌ No session found!");
+        return;
+      }
       const { purchaseId } = session.data[0].metadata;
 
       console.log(purchaseId);
