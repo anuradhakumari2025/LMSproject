@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const connectDB = require('./configs/mongodb');
 require('dotenv').config();
-const {clerkWebhooks} = require('./controllers/Webhook');
+const {clerkWebhooks, stripeWebhooks} = require('./controllers/Webhook');
 const  educatorRouter  = require('./routes/EducatorRoutes');
 const courseRouter = require('./routes/CourseRoutes');
 const {clerkMiddleware} = require('@clerk/express');
@@ -28,6 +28,7 @@ app.post('/clerk',express.json(),clerkWebhooks)
 app.use('/api/educator',express.json(),educatorRouter)
 app.use('/api/course',express.json(),courseRouter)
 app.use('/api/user',express.json(),userRouter)
+app.post('/stripe',express.raw({type: 'application/json'}),stripeWebhooks)
 
 // Start the server
 app.listen(port, () => {
