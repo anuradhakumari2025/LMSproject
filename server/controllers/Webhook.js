@@ -54,19 +54,21 @@ module.exports.clerkWebhooks = async (req, res) => {
 
 const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-module.exports.stripeWebhooks = async (req, res) => {
-  const sig = req.headers["stripe-signature"];
+module.exports.stripeWebhooks = async (request, response) => {
+  console.log("🔔 Webhook received:", req.headers);
+
+  const sig = request.headers["stripe-signature"];
   let event;
   try {
     event = Stripe.Webhook.construct_event(
-      req.body,
+      request.body,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET
     );
     console.log("✅ Webhook verified:", event.type);
   } catch (error) {
     console.log(error);
-    return res.status(400).send(`Webhook Error: ${error.message}`);
+    return response.status(400).send(`Webhook Error: ${error.message}`);
   }
   console.log("🔄 Processing event:", event.type);
 
@@ -124,5 +126,5 @@ module.exports.stripeWebhooks = async (req, res) => {
     default:
       console.log(`Unhandled event type: ${event.type}`);
   }
-  res.json({ received: true });
+  response.json({ received: true });
 };
