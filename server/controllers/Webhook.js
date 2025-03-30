@@ -60,7 +60,7 @@ module.exports.stripeWebhooks = async (request, response) => {
   const sig = request.headers["stripe-signature"];
   let event;
   try {
-    event = Stripe.Webhook.construct_event(
+    event = stripeInstance.webhooks.constructEvent(
       request.body,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET
@@ -90,6 +90,14 @@ module.exports.stripeWebhooks = async (request, response) => {
         console.error("❌ No session found!",paymentIntentId);
         return;
       }
+
+
+      if (!session.data.length || !session.data[0].metadata.purchaseId) {
+        console.error("❌ No valid purchaseId found in session metadata!");
+        return response.status(400).send("No valid purchaseId found!");
+      }
+      
+
       const { purchaseId } = session.data[0].metadata;
       if (!purchaseId) {
         console.error("❌ No purchaseId found in session metadata!");
@@ -122,11 +130,18 @@ module.exports.stripeWebhooks = async (request, response) => {
     case "payment_intent.payment_failed": {
       const paymentIntent = event.data.object;
       const paymentIntentId = paymentIntent.id;
-      const session = await stripeInstance.checkout.sessions.list({
-        payment_intent: paymentIntentId,
-      });
+      // const session = await stripeInstance.checkout.sessions.list({
+      //   payment_intent: paymentIntentId,
+      // });
+
+      const session = await stripeInstance.checkout.sessions.retrieve(paymentIntentId);
+
       const { purchaseId } = session.data[0].metadata;
       const purchaseData = await Purchase.findById(purchaseId);
+      if (!purchaseData) {
+        console.error("❌ Purchase not found for purchaseId:", purchaseId);
+        return;
+      }
       purchaseData.status = "failed";
       await purchaseData.save();
       break;
