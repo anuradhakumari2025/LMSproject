@@ -55,7 +55,7 @@ module.exports.clerkWebhooks = async (req, res) => {
 const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 module.exports.stripeWebhooks = async (request, response) => {
-  console.log("🔔 Webhook received:", req.headers);
+  console.log("🔔 Webhook received:", request.headers);
 
   const sig = request.headers["stripe-signature"];
   let event;
@@ -87,14 +87,23 @@ module.exports.stripeWebhooks = async (request, response) => {
       console.log("📝 Session Data:", session);
 
       if (!session.data.length) {
-        console.error("❌ No session found!");
+        console.error("❌ No session found!",paymentIntentId);
         return;
       }
       const { purchaseId } = session.data[0].metadata;
-
+      if (!purchaseId) {
+        console.error("❌ No purchaseId found in session metadata!");
+        return;
+      }
       console.log(purchaseId);
 
       const purchaseData = await Purchase.findById(purchaseId);
+      if (!purchaseData) {
+        console.error("❌ Purchase not found for purchaseId:", purchaseId);
+        return;
+      }
+      console.log("🔄 Updating purchase status to 'completed'...");
+
       const userData = await User.findById(purchaseData.userId);
       const courseData = await Course.findById(
         purchaseData.courseId.toString()
