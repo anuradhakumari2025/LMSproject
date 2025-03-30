@@ -1,6 +1,7 @@
 const { Webhook } = require("svix");
 const User = require("../models/User");
 const Purchase = require("../models/Purchase");
+const crypto = require("crypto");
 const Course = require("../models/Course");
 const Stripe = require("stripe");
 
@@ -52,103 +53,144 @@ module.exports.clerkWebhooks = async (req, res) => {
   }
 };
 
-const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
+// const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-module.exports.stripeWebhooks = async (request, response) => {
-  console.log("🔔 Webhook received:", request.headers);
+// module.exports.stripeWebhooks = async (request, response) => {
+//   console.log("🔔 Webhook received:", request.headers);
 
-  const sig = request.headers["stripe-signature"];
-  let event;
-  try {
-    event = stripeInstance.webhooks.constructEvent(
-      request.body,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET
-    );
-    console.log("✅ Webhook verified:", event.type);
-  } catch (error) {
-    console.log(error);
-    return response.status(400).send(`Webhook Error: ${error.message}`);
-  }
-  console.log("🔄 Processing event:", event.type);
+//   const sig = request.headers["stripe-signature"];
+//   let event;
+//   try {
+//     event = stripeInstance.webhooks.constructEvent(
+//       request.body,
+//       sig,
+//       process.env.STRIPE_WEBHOOK_SECRET
+//     );
+//     console.log("✅ Webhook verified:", event.type);
+//   } catch (error) {
+//     console.log(error);
+//     return response.status(400).send(`Webhook Error: ${error.message}`);
+//   }
+//   console.log("🔄 Processing event:", event.type);
 
-  // Handle the event
-  switch (event.type) {
-    case "payment_intent.succeeded": {
-      console.log("💰 Payment succeeded!");
+//   // Handle the event
+//   switch (event.type) {
+//     case "payment_intent.succeeded": {
+//       console.log("💰 Payment succeeded!");
 
-      const paymentIntent = event.data.object;
-      const paymentIntentId = paymentIntent.id;
+//       const paymentIntent = event.data.object;
+//       const paymentIntentId = paymentIntent.id;
 
-      const session = await stripeInstance.checkout.sessions.list({
-        payment_intent: paymentIntentId,
-      });
+//       const session = await stripeInstance.checkout.sessions.list({
+//         payment_intent: paymentIntentId,
+//       });
 
-      console.log("📝 Session Data:", session);
+//       console.log("📝 Session Data:", session);
 
-      if (!session.data.length) {
-        console.error("❌ No session found!",paymentIntentId);
-        return;
-      }
+//       if (!session.data.length) {
+//         console.error("❌ No session found!",paymentIntentId);
+//         return;
+//       }
 
 
-      if (!session.data.length || !session.data[0].metadata.purchaseId) {
-        console.error("❌ No valid purchaseId found in session metadata!");
-        return response.status(400).send("No valid purchaseId found!");
-      }
+//       if (!session.data.length || !session.data[0].metadata.purchaseId) {
+//         console.error("❌ No valid purchaseId found in session metadata!");
+//         return response.status(400).send("No valid purchaseId found!");
+//       }
       
 
-      const { purchaseId } = session.data[0].metadata;
-      if (!purchaseId) {
-        console.error("❌ No purchaseId found in session metadata!");
-        return;
-      }
-      console.log(purchaseId);
+//       const { purchaseId } = session.data[0].metadata;
+//       if (!purchaseId) {
+//         console.error("❌ No purchaseId found in session metadata!");
+//         return;
+//       }
+//       console.log(purchaseId);
 
-      const purchaseData = await Purchase.findById(purchaseId);
-      if (!purchaseData) {
-        console.error("❌ Purchase not found for purchaseId:", purchaseId);
-        return;
-      }
-      console.log("🔄 Updating purchase status to 'completed'...");
+//       const purchaseData = await Purchase.findById(purchaseId);
+//       if (!purchaseData) {
+//         console.error("❌ Purchase not found for purchaseId:", purchaseId);
+//         return;
+//       }
+//       console.log("🔄 Updating purchase status to 'completed'...");
 
-      const userData = await User.findById(purchaseData.userId);
-      const courseData = await Course.findById(
-        purchaseData.courseId.toString()
-      );
-      courseData.enrolledStudents.push(userData);
-      await courseData.save();
+//       const userData = await User.findById(purchaseData.userId);
+//       const courseData = await Course.findById(
+//         purchaseData.courseId.toString()
+//       );
+//       courseData.enrolledStudents.push(userData);
+//       await courseData.save();
 
-      userData.enrolledCourses.push(courseData._id);
-      await userData.save();
-      console.log("purchase data before save ", purchaseData);
-      purchaseData.status = "completed";
-      await purchaseData.save();
-      console.log("purchase data after save ", purchaseData);
-      break;
+//       userData.enrolledCourses.push(courseData._id);
+//       await userData.save();
+//       console.log("purchase data before save ", purchaseData);
+//       purchaseData.status = "completed";
+//       await purchaseData.save();
+//       console.log("purchase data after save ", purchaseData);
+//       break;
+//     }
+//     case "payment_intent.payment_failed": {
+//       const paymentIntent = event.data.object;
+//       const paymentIntentId = paymentIntent.id;
+//       // const session = await stripeInstance.checkout.sessions.list({
+//       //   payment_intent: paymentIntentId,
+//       // });
+
+//       const session = await stripeInstance.checkout.sessions.retrieve(paymentIntentId);
+
+//       const { purchaseId } = session.data[0].metadata;
+//       const purchaseData = await Purchase.findById(purchaseId);
+//       if (!purchaseData) {
+//         console.error("❌ Purchase not found for purchaseId:", purchaseId);
+//         return;
+//       }
+//       purchaseData.status = "failed";
+//       await purchaseData.save();
+//       break;
+//     }
+//     // # ... handle other event types
+//     default:
+//       console.log(`Unhandled event type: ${event.type}`);
+//   }
+//   response.json({ received: true });
+// };
+
+
+
+module.exports.razorpayWebhook = async (req, res) => {
+  try {
+    console.log("Webhook Payload:", JSON.stringify(req.body, null, 2));
+
+    const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
+
+    // Verify the webhook signature
+    const signature = req.headers["x-razorpay-signature"];
+    const body = JSON.stringify(req.body);
+
+    const expectedSignature = crypto
+      .createHmac("sha256", secret)
+      .update(body)
+      .digest("hex");
+
+    if (signature !== expectedSignature) {
+      return res.status(400).json({ success: false, message: "Invalid signature" });
     }
-    case "payment_intent.payment_failed": {
-      const paymentIntent = event.data.object;
-      const paymentIntentId = paymentIntent.id;
-      // const session = await stripeInstance.checkout.sessions.list({
-      //   payment_intent: paymentIntentId,
-      // });
 
-      const session = await stripeInstance.checkout.sessions.retrieve(paymentIntentId);
+    const { payload } = req.body;
 
-      const { purchaseId } = session.data[0].metadata;
+    if (payload.payment.entity.status === "captured") {
+      const purchaseId = payload.payment.entity.notes.purchaseId;
       const purchaseData = await Purchase.findById(purchaseId);
-      if (!purchaseData) {
-        console.error("❌ Purchase not found for purchaseId:", purchaseId);
-        return;
+
+      if (purchaseData) {
+        purchaseData.status = "completed";
+        await purchaseData.save();
+        console.log("✅ Purchase status updated to 'completed':", purchaseData);
       }
-      purchaseData.status = "failed";
-      await purchaseData.save();
-      break;
     }
-    // # ... handle other event types
-    default:
-      console.log(`Unhandled event type: ${event.type}`);
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Error handling Razorpay webhook:", error);
+    res.json({ success: false, message: error.message });
   }
-  response.json({ received: true });
 };
