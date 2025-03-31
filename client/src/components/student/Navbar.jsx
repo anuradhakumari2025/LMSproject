@@ -7,12 +7,69 @@ import {
   useUser,
 } from "@clerk/clerk-react";
 import { AppContext } from "../../context/AppContext";
+import axios from "axios";
+import { toast } from "react-toastify";
+import { Bounce } from "react-toastify";
 
 const Navbar = () => {
-  const {navigate,isEducator,setIsEducator} = useContext(AppContext)
+  const {navigate,isEducator,setIsEducator,backendUrl,getToken} = useContext(AppContext)
   const isCourseListPage = location.pathname.includes("/course-list");
   const { openSignIn } = useClerk();
   const { user } = useUser();
+
+  const becomeEducator = async () => {  
+    try {
+      if(isEducator){
+        navigate('/educator/dashboard')
+        return;
+      }
+      const token = await getToken()
+      const {data} = await axios.get(`${backendUrl}/api/educator/update-role`, {
+        headers:{
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      if(data.success){
+        setIsEducator(true);
+        toast.success(data.message, {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+          transition: Bounce,
+        });
+      }else{
+        toast.error(data.message, {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+          transition: Bounce,
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+        transition: Bounce,
+      });
+    }
+  }
   return (
     <div
       className={`flex items-center justify-between py-4 px-4 sm:px-10 md:px-14  lg:px-36 border-b border-white ${
@@ -26,7 +83,7 @@ const Navbar = () => {
         <div className="flex items-center gap-4 text-[16px]">
           {user && (
             <>
-              <button onClick={() => {navigate('/educator/dashboard')}}>{isEducator? 'Educator Dashboard':'Become Educator'}</button> |
+              <button onClick={becomeEducator}>{isEducator? 'Educator Dashboard':'Become Educator'}</button> |
               <Link to={"/my-enrollments"}>My Enrollments</Link>
             </>
           )}
@@ -48,7 +105,7 @@ const Navbar = () => {
         <div className="flex items-center gap-1 sm:gap-2 max-sm:text-xs">
           {user && (
             <>
-              <button onClick={() => {navigate('/educator/educator')}}>{isEducator? 'Educator Dashboard':'Become Educator'}</button>  |
+              <button onClick={becomeEducator}>{isEducator? 'Educator Dashboard':'Become Educator'}</button>  |
               <Link to={"/my-enrollments"}> My Enrollments</Link>
             </>
           )}

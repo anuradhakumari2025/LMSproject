@@ -7,16 +7,16 @@ const CallToAction = () => {
       <h1 className="md:text-4xl text-xl text-white font-medium">
         Learn anything,anytime,anywhere
       </h1>
-      <p className="md:text-base text-sm leading-4 text-gray-300">
-        Lorem ipsum dolor sit amet consectetur adipisicing elit. Soluta,
-        repellat in? Rerum praesentium explicabo vitae!
+      <p className="md:text-base text-sm leading-5 text-gray-300">
+      Unlock your potential with flexible learning options. <br />
+      Start your journey today and achieve your dreams with ease!
       </p>
       <div className="text-gray-50 flex items-center gap-6 mt-4">
         <button className="bg-blue-600 px-6 py-2 rounded-md cursor-pointer">
           Get Started
         </button>
         <button className="flex items-center bg-blue-00 px-6 py-2 rounded-md gap-3 cursor-pointer">
-          Learn More{" "}
+          Learn More
           <img
             src={assets.arrow_icon}
             alt="arrowIcon"

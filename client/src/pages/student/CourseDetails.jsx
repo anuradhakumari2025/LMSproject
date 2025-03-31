@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { use, useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { AppContext } from "../../context/AppContext";
 import Loading from "../../components/student/Loading";
@@ -6,6 +6,9 @@ import { assets } from "../../assets/assets";
 import humanizeDuration from "humanize-duration";
 import Footer from "../../components/student/Footer";
 import YouTube from "react-youtube";
+import axios from "axios";
+import { toast } from "react-toastify";
+import { Bounce } from "react-toastify";
 
 const CourseDetails = () => {
   const { id } = useParams();
@@ -20,14 +23,219 @@ const CourseDetails = () => {
     calculateCourseDuration,
     calculateNoOfLectures,
     currency,
+    backendUrl,
+    userData,
+    navigate,
+    getToken,
+    setUserData,
   } = useContext(AppContext);
+
+  const razorpayKeyId = import.meta.env.VITE_RAZORPAY_KEY_ID;
+
   const fetchCourseData = async () => {
-    const findCourse = allCourses.find((course) => course._id === id);
-    setCourseData(findCourse);
+    // const findCourse = allCourses.find((course) => course._id === id);
+    // setCourseData(findCourse);
+    try {
+      const { data } = await axios.get(backendUrl + "/api/course/" + id);
+      console.log("course details", data);
+      if (data.success) {
+        setCourseData(data.courseData);
+      } else {
+        toast.error(data.message, {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+          transition: Bounce,
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+        transition: Bounce,
+      });
+    }
   };
+
+  const enrolledCourse = async () => {
+    try {
+      if (!userData) {
+        return toast.warn("Login to Enroll", {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+          transition: Bounce,
+        });
+      }
+      if (isAlreadyEnrolled) {
+        return toast.warn("Already Enrolled", {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+          transition: Bounce,
+        });
+      }
+      const token = await getToken();
+      const { data } = await axios.post(
+        backendUrl + "/api/user/purchase-course",
+        {
+          courseId: courseData._id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log("enrolled Course ", data);
+      if (data.success) {
+        const options = {
+          key: razorpayKeyId,
+          amount: data.amount,
+          currency: data.currency,
+          name: "Anuradha",
+          description: `Payment for ${courseData.courseTitle}`,
+          order_id: data.orderId,
+          handler: async function (response) {
+            console.log("Payment Successful:", response);
+
+            // Verify payment on the backend
+            const verifyResponse = await axios.post(
+              backendUrl + "/api/user/verify-payment",
+              {
+                orderId: data.orderId,
+                paymentId: response.razorpay_payment_id,
+                signature: response.razorpay_signature,
+              },
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+
+            if (verifyResponse.data.success) {
+              toast.success(
+                "Payment verified and course enrolled successfully!",
+                {
+                  position: "top-right",
+                  autoClose: 5000,
+                  hideProgressBar: false,
+                  closeOnClick: false,
+                  pauseOnHover: true,
+                  draggable: true,
+                  progress: undefined,
+                  theme: "dark",
+                  transition: Bounce,
+                }
+              );
+              // Update the state to reflect enrollment
+               setIsAlreadyEnrolled(true);
+
+              // Fetch updated user data
+              const updatedUserData = await axios.get(
+                backendUrl + "/api/user",
+                {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  },
+                }
+              );
+
+              // Update the global user data state
+              setUserData(updatedUserData.data.user);
+
+              // Navigate to the enrollments page
+              navigate("/my-enrollments");
+            } else {
+              toast.error(
+                "Payment verification failed. Please contact support.",
+                {
+                  position: "top-right",
+                  autoClose: 5000,
+                  hideProgressBar: false,
+                  closeOnClick: false,
+                  pauseOnHover: true,
+                  draggable: true,
+                  progress: undefined,
+                  theme: "dark",
+                  transition: Bounce,
+                }
+              );
+            }
+          },
+          prefill: {
+            name: userData.name.split(" ")[0],
+            email: userData.email,
+            contact: userData.contact || "",
+          },
+          theme: {
+            color: "#3399cc",
+          },
+        };
+
+        const razorpay = new window.Razorpay(options);
+        razorpay.open();
+      } else {
+        toast.error(data.message, {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+          transition: Bounce,
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+        transition: Bounce,
+      });
+    }
+  };
+
   useEffect(() => {
     fetchCourseData();
-  }, [allCourses]);
+  }, []);
+
+  useEffect(() => {
+    if (userData && courseData) {
+      setIsAlreadyEnrolled(userData.enrolledCourses.includes(courseData._id));
+    }
+  }, [userData, courseData]);
 
   const toggleFunction = (index) => {
     setOpenSection((prev) => ({ ...prev, [index]: !prev[index] }));
@@ -68,25 +276,28 @@ const CourseDetails = () => {
               ))}
             </div>
             <p className="text-blue-400">
-              ({courseData.courseRatings.length}
-              {courseData.courseRatings.length > 1 ? " ratings" : " rating"})
+              ({courseData?.courseRatings?.length}
+              {courseData?.courseRatings?.length > 1 ? " ratings" : " rating"})
             </p>
             <p>
-              {courseData.enrolledStudents.length}
-              {courseData.enrolledStudents.length > 1
+              {courseData?.enrolledStudents?.length}
+              {courseData?.enrolledStudents?.length > 1
                 ? " Students"
                 : " Student"}
             </p>
           </div>
           <p className="text-gray-300">
-            Course by <span className="text-blue-500 underline">Anuradha</span>
+            Course by
+            <span className="text-blue-500 underline">
+              {courseData?.educator?.name.split(" ")[0]}
+            </span>
           </p>
           <div className="pt-6">
             <h2 className="font-semibold text-xl text-gray-200">
               Course Structure
             </h2>
             <div className="space-y-4 my-6">
-              {courseData.courseContent.map((chapter, index) => (
+              {courseData?.courseContent?.map((chapter, index) => (
                 <div
                   key={index}
                   className="border border-gray-600 rounded shadow-md shadow-gray-400"
@@ -104,11 +315,11 @@ const CourseDetails = () => {
                         alt=""
                       />
                       <p className="text-gray-900 text-sm font-medium md:text-base">
-                        {chapter.chapterTitle}
+                        {chapter?.chapterTitle}
                       </p>
                     </div>
                     <p className="text-gray-500 font-normal text-sm md:text-normal">
-                      {chapter.chapterContent.length} lectures -{" "}
+                      {chapter?.chapterContent?.length} lectures -{" "}
                       {calculateChapterTime(chapter)}
                     </p>
                   </div>
@@ -118,8 +329,11 @@ const CourseDetails = () => {
                     } bg-slate-500/70`}
                   >
                     <ul className="list-disc md:pl-10 pl-4 pr-4 py-2 text-grey-600 border-t border-gray-300">
-                      {chapter.chapterContent.map((lecture, lectureIndex) => (
-                        <li key={lectureIndex} className="flex items-start gap-2 py-1">
+                      {chapter?.chapterContent?.map((lecture, lectureIndex) => (
+                        <li
+                          key={lectureIndex}
+                          className="flex items-start gap-2 py-1"
+                        >
                           <img
                             src={assets.play_icon}
                             alt="play icon"
@@ -185,7 +399,7 @@ const CourseDetails = () => {
               iframeClassName="w-full aspect-video"
             />
           ) : (
-            <img src={courseData.courseThumbnail} alt="" className="" />
+            <img src={courseData?.courseThumbnail} alt="" className="" />
           )}
           <div className="p-5">
             <div className="flex items-center gap-2">
@@ -197,17 +411,17 @@ const CourseDetails = () => {
             </div>
             <div className="flex items-center gap-4">
               <p className="md:text-2xl text-xl font-bold">
-                {currency}{" "}
+                {currency}
                 {(
                   courseData.coursePrice -
                   (courseData.discount * courseData.coursePrice) / 100
                 ).toFixed(2)}{" "}
               </p>
               <p className="line-through font-normal md:text-base text-sm">
-                {currency} {courseData.coursePrice}{" "}
+                {currency} {courseData.coursePrice}
               </p>
               <p className="font-normal md:text-base text-sm text-green-500">
-                {courseData.discount}% off{" "}
+                {courseData.discount}% off
               </p>
             </div>
             <div className="flex items-center gap-4 md:text-base md:pt-4 pt-2 text-gray-500">
@@ -227,8 +441,11 @@ const CourseDetails = () => {
               </div>
             </div>
 
-            <button className="w-full px-5 font-medium rounded bg-blue-600 py-2 mt-4 md:mt-6 text-white ">
-              {isAlreadyEnrolled ? "Already Enrolled" : "Enroll Now"}{" "}
+            <button
+              onClick={enrolledCourse}
+              className="w-full px-5 font-medium rounded bg-blue-600 py-2 mt-4 md:mt-6 text-white "
+            >
+              {isAlreadyEnrolled ? "Already Enrolled" : "Enroll Now"}
             </button>
 
             <div className="pt-6">

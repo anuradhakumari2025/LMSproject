@@ -11,9 +11,7 @@ const CoursesSection = () => {
         Learn from the best
       </h2>
       <p className="text-sm md:text-base text-gray-400 mt-3">
-        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Minus eveniet
-        dolores<br/> nemo rem inventore voluptates atque ab magni. vero
-        atque omnis nihil fuga corrupti possimus!
+      Unlock your potential with courses designed by industry experts.<br/>  Gain practical skills, hands-on experience, and certifications to excel in your career.
       </p>
       <div className="grid grid-cols-auto-fit px-4 md:px-0 md:my-16 gap-6 my-8">
         {allCourses.slice(0, 4).map((course, idx) => (

@@ -5,12 +5,16 @@ import { Link } from 'react-router-dom'
 
 const CourseCard = ({course}) => {
   const {currency,calculateRating} = useContext(AppContext)
+  console.log("course",course);
+  
+  // Fallback for courseRatings
+  const courseRatings = course.courseRatings || [];
   return (
     <Link onClick={()=>scrollTo(0,0)} to={'/course/' + course._id} className='border border-white overflow-hidden rounded-lg pb-6 shadow-lg shadow-gray-500 hover:border-4 hover:border-white hover:scale-110 transition-all duration-200'>
       <img src={course.courseThumbnail} alt="" className='w-full'/>
       <div className='p-3 text-left'>
         <h3 className='text-gray-50 text-base font-semibold '>{course.courseTitle}</h3>
-         <p className='text-gray-50'>Anuradha</p>
+         <p className='text-gray-50'>{course?.educator?.name.split(" ")[0]}</p>
         <div className='flex items-center space-x-3 text-gray-50'>
           <p className='text-yellow-400'>{calculateRating(course)}</p>
           <div className='flex'>
@@ -20,7 +24,7 @@ const CourseCard = ({course}) => {
               ))
             }
           </div>
-          <p className='text-yellow-100'>{course.courseRatings.length}</p>
+          <p className='text-yellow-100'>{courseRatings.length}</p>
         </div>
         <p className='text-teal-300'>{currency}{(course.coursePrice - (course.discount * course.coursePrice / 100)).toFixed(2)}</p>
       </div>

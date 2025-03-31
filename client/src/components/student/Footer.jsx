@@ -8,9 +8,8 @@ const Footer = () => {
         <div className="flex flex-col md:items-start items-center w-full">
           <img src={assets.logo_dark} alt="" />
           <p className="text-white/80 mt-6 text-center md:text-left text-sm ">
-            Lorem ipsum dolor sit, amet consectetur adipisicing elit. Iure id
-            assumenda facilis est quam sit sequi consectetur similique
-            exercitationem soluta.
+          Empowering learners worldwide with knowledge and skills to achieve their dreams. <br />
+          Join us and take the first step toward your success today!
           </p>
         </div>
         <div className="flex flex-col md:items-start items-center w-full">

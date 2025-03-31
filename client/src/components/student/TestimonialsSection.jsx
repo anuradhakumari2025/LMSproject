@@ -9,8 +9,8 @@ const TestimonialsSection = () => {
     <div className="pb-14 md:px-0 px-8">
       <h2 className="text-3xl text-white font-medium ">Testimonials</h2>
       <p className="text-gray-300 md:text-base mt-3">
-        Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam
-        mollitia odit qui consectetur perferendis nulla?
+      Hear what our students have to say about their learning journey. <br />
+      Real stories, real success, and real impact!
       </p>
       <div className="grid grid-cols-auto-fit gap-8 mt-10">
         {dummyTestimonial.map((testimonial, index) => (

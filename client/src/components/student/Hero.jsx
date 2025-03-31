@@ -15,14 +15,16 @@ const Hero = () => {
         />
       </h1>
       <p className="md:block hidden text-gray-400 max-w-2xl mx-auto md:leading-[22px] md:text-[16px]">
-        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quam eos sequi
-        voluptatum illum sapiente dolorum?
+        Discover a world of opportunities with courses tailored to your goals.
+        <br />
+        Learn new skills, advance your career, and achieve your dreams today!
       </p>
       <p className="md:hidden text-gray-300 max-w-sm mx-auto md:leading-[22px] md:text-[16px] leading-[20px] text-[14px]">
-        Lorem ipsum dolor sit amet consectetur adipisicing elit. Commodi harum
-        ratione eaque aspernatur obcaecati alias.
+        Discover a world of opportunities with courses tailored to your goals.
+        <br />
+        Learn new skills, advance your career, and achieve your dreams today!
       </p>
-      <SearchBar/>
+      <SearchBar />
     </div>
   );
 };

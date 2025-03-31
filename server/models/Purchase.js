@@ -20,6 +20,8 @@ const purchaseSchema = new Schema(
       enum: ["pending", "completed", "failed"],
       default: "pending",
     },
+    razorpayOrderId: { type: String }, // Store Razorpay order ID
+
   },
   {
     timestamps: true,
