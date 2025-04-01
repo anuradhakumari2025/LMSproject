@@ -1,16 +1,56 @@
 import React, { useContext, useEffect, useState } from "react";
 import { AppContext } from "../../context/AppContext";
 import Loading from "../../components/student/Loading";
+import { Bounce } from "react-toastify";
+import { toast } from "react-toastify";
+import axios from "axios";
 
 const MyCourses = () => {
-  const { currency, allCourses } = useContext(AppContext);
+  const { currency, allCourses,backendUrl,isEducator,getToken } = useContext(AppContext);
   const [courses, setCourses] = useState(null);
   const fetchEducatorCourses = async () => {
-    setCourses(allCourses);
+    try {
+      const token = await getToken();
+      const {data} = await axios.get(`${backendUrl}/api/educator/courses`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (data.success) {
+        setCourses(data.courses);
+      } else {
+        toast.error(data.message, {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+          transition: Bounce,
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+        transition: Bounce,
+      });
+    }
   };
   useEffect(() => {
-    fetchEducatorCourses();
-  }, []);
+    if(isEducator) {
+      fetchEducatorCourses();
+    }
+  }, [isEducator]);
   return courses ? (
     <div className="px-4 bg-slate-600 pt-8 pb-0 min-h-screen flex flex-col items-start justify-between md:p-8 md:pb-10">
       <div className="w-full px-4 pb-4">

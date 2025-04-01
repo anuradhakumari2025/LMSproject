@@ -130,9 +130,9 @@ module.exports.purchaseCourse = async (req, res) => {
 
     const order = await razorpayInstance.orders.create(options);
 
-     // Update the purchase record with the Razorpay order ID
-     newPurchase.razorpayOrderId = order.id;
-     await newPurchase.save();
+    // Update the purchase record with the Razorpay order ID
+    newPurchase.razorpayOrderId = order.id;
+    await newPurchase.save();
 
     res.json({
       success: true,
@@ -146,7 +146,6 @@ module.exports.purchaseCourse = async (req, res) => {
     res.json({ success: false, message: error.message });
   }
 };
-
 
 module.exports.verifyPayment = async (req, res) => {
   try {
@@ -164,11 +163,14 @@ module.exports.verifyPayment = async (req, res) => {
 
     // Compare the generated signature with the received signature
     if (generatedSignature !== signature) {
-      return res.json({ success: false, message: "Payment verification failed" });
+      return res.json({
+        success: false,
+        message: "Payment verification failed",
+      });
     }
 
     // Update the purchase status in the database
-    const purchaseData = await Purchase.findOne({razorpayOrderId: orderId });
+    const purchaseData = await Purchase.findOne({ razorpayOrderId: orderId });
     if (!purchaseData) {
       return res.json({ success: false, message: "Purchase not found" });
     }
@@ -176,7 +178,6 @@ module.exports.verifyPayment = async (req, res) => {
     purchaseData.status = "completed";
     await purchaseData.save();
 
-    
     // Update the user's enrolled courses
     const user = await User.findById(purchaseData.userId);
     if (!user) {
@@ -188,16 +189,16 @@ module.exports.verifyPayment = async (req, res) => {
       await user.save();
     }
 
-     // Update the course's enrolled students
-     const course = await Course.findById(purchaseData.courseId);
-     if (!course) {
-       return res.json({ success: false, message: "Course not found" });
-     }
- 
-     if (!course.enrolledStudents.includes(user._id)) {
-       course.enrolledStudents.push(user._id);
-       await course.save();
-     }
+    // Update the course's enrolled students
+    const course = await Course.findById(purchaseData.courseId);
+    if (!course) {
+      return res.json({ success: false, message: "Course not found" });
+    }
+
+    if (!course.enrolledStudents.includes(user._id)) {
+      course.enrolledStudents.push(user._id);
+      await course.save();
+    }
 
     res.json({ success: true, message: "Payment verified successfully" });
   } catch (error) {
@@ -212,13 +213,7 @@ module.exports.updateUserCourseProgress = async (req, res) => {
     const userId = req.auth.userId;
 
     const progressData = await CourseProgress.findOne({ userId, courseId });
-    if (!progressData) {
-      await CourseProgress.create({
-        userId,
-        courseId,
-        lectureCompleted: [lectureId],
-      });
-    } else {
+    if (progressData) {
       if (progressData.lectureCompleted.includes(lectureId)) {
         return res.json({
           success: true,
@@ -227,6 +222,12 @@ module.exports.updateUserCourseProgress = async (req, res) => {
       }
       progressData.lectureCompleted.push(lectureId);
       await progressData.save();
+    } else {
+      await CourseProgress.create({
+        userId,
+        courseId,
+        lectureCompleted: [lectureId],
+      });
     }
 
     res.json({
@@ -243,10 +244,12 @@ module.exports.getUserCourseProgress = async (req, res) => {
     const { courseId } = req.body;
     const userId = req.auth.userId;
     const progressData = await CourseProgress.findOne({ userId, courseId });
+    console.log("Progress Data ",progressData)
     if (!progressData) {
       return res.json({ success: false, message: "No progress data found" });
+    } else {
+      return res.json({ success: true, progressData });
     }
-    res.json({ success: true, progressData });
   } catch (error) {
     res.json({ success: false, message: error.message });
   }

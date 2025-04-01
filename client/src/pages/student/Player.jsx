@@ -28,7 +28,7 @@ const Player = () => {
     fetchUserEnrolledCourses,
   } = useContext(AppContext);
 
-  const getCourseData = async () => {
+  const getCourseData = () => {
     enrolledCourses.map((course) => {
       if (course._id === courseId) {
         console.log("Course Data:", course); // Debugging log
@@ -60,12 +60,10 @@ const Player = () => {
     }
   }, [enrolledCourses]);
 
- 
-
   const getCourseProgress = async () => {
     try {
       const token = await getToken();
-      const { data } = await axios.get(
+      const { data } = await axios.post(
         `${backendUrl}/api/user/get-course-progress`,
         { courseId },
         {
@@ -76,6 +74,7 @@ const Player = () => {
       );
       if (data.success) {
         setProgressData(data.progressData);
+        console.log("Progress Data:", data.progressData); // Debugging log
         toast.success(data.message, {
           position: "top-right",
           autoClose: 2000,
@@ -242,8 +241,8 @@ const Player = () => {
             </h2>
             <div className="space-y-4 my-6">
               {courseData &&
-              courseData.courseContent &&
-                courseData.courseContent.map((chapter, index) => (
+                courseData.courseContent &&
+                courseData.courseContent?.map((chapter, index) => (
                   <div
                     key={index}
                     className="border border-gray-600 rounded shadow-md shadow-gray-400"
@@ -275,50 +274,52 @@ const Player = () => {
                       } bg-slate-500/70`}
                     >
                       <ul className="list-disc md:pl-10 pl-4 pr-4 py-2 text-grey-600 border-t border-gray-300">
-                        {chapter.chapterContent.map((lecture, lectureIndex) => (
-                          <li
-                            key={lectureIndex}
-                            className="flex items-start gap-2 py-1"
-                          >
-                            <img
-                              src={
-                                progressData &&
-                                progressData.lectureCompleted.includes(
-                                  playerData.lectureId
-                                )
-                                  ? assets.blue_tick_icon
-                                  : assets.play_icon
-                              }
-                              alt="play icon"
-                              className=" h-4 mt-1 w-4"
-                            />
-                            <div className="flex items-center justify-between w-full text-gray-300 md:text-base text-xs">
-                              <p>{lecture.lectureTitle}</p>
-                              <div className="flex gap-2">
-                                {lecture.lectureUrl && (
-                                  <p
-                                    onClick={() =>
-                                      setPlayerData({
-                                        ...lecture,
-                                        chapter: index + 1,
-                                        lecture: lectureIndex + 1,
-                                      })
-                                    }
-                                    className="text-blue-400 cursor-pointer"
-                                  >
-                                    Watch
-                                  </p>
-                                )}
-                                <p>
-                                  {humanizeDuration(
-                                    lecture.lectureDuration * 60 * 1000,
-                                    { units: ["h", "m"] }
+                        {chapter.chapterContent?.map(
+                          (lecture, lectureIndex) => (
+                            <li
+                              key={lectureIndex}
+                              className="flex items-start gap-2 py-1"
+                            >
+                              <img
+                                src={
+                                  progressData &&
+                                  progressData?.lectureCompleted?.includes(
+                                    lecture?.lectureId
+                                  )
+                                    ? assets.blue_tick_icon
+                                    : assets.play_icon
+                                }
+                                alt="play icon"
+                                className=" h-4 mt-1 w-4"
+                              />
+                              <div className="flex items-center justify-between w-full text-gray-300 md:text-base text-xs">
+                                <p>{lecture.lectureTitle}</p>
+                                <div className="flex gap-2">
+                                  {lecture.lectureUrl && (
+                                    <p
+                                      onClick={() =>
+                                        setPlayerData({
+                                          ...lecture,
+                                          chapter: index + 1,
+                                          lecture: lectureIndex + 1,
+                                        })
+                                      }
+                                      className="text-blue-400 cursor-pointer"
+                                    >
+                                      Watch
+                                    </p>
                                   )}
-                                </p>
+                                  <p>
+                                    {humanizeDuration(
+                                      lecture.lectureDuration * 60 * 1000,
+                                      { units: ["h", "m"] }
+                                    )}
+                                  </p>
+                                </div>
                               </div>
-                            </div>
-                          </li>
-                        ))}
+                            </li>
+                          )
+                        )}
                       </ul>
                     </div>
                   </div>

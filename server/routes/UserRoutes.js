@@ -11,7 +11,7 @@ userRouter.post('/purchase-course',purchaseCourse)
 userRouter.post('/verify-payment',verifyPayment)
 userRouter.post("/razorpay-webhook", express.json(), razorpayWebhook);
 userRouter.post('/update-course-progress',updateUserCourseProgress)
-userRouter.get('/get-course-progress',getUserCourseProgress)
+userRouter.post('/get-course-progress',getUserCourseProgress)
 userRouter.post('/add-rating',addUserRating)
 
 module.exports = userRouter

@@ -2,6 +2,7 @@ const { clerkClient } = require("@clerk/express");
 const Course = require("../models/Course");
 const { v2: cloudinary } = require("cloudinary");
 const Purchase = require("../models/Purchase");
+const User = require("../models/User");
 
 module.exports.updateRoleToEducator = async (req, res) => {
   try {
