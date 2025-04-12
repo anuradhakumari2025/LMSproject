@@ -25,7 +25,7 @@ export const AppContextProvider = (props) => {
     // setAllCourses(dummyCourses);
     try {
       const { data } = await axios.get(backendUrl + "/api/course/all");
-      console.log("all courses",data)
+      // console.log("all courses",data)
       if (data.success) {
         setAllCourses(data.courses);
       } else {
@@ -67,7 +67,7 @@ export const AppContextProvider = (props) => {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log("user Data",data);
+      // console.log("user Data",data);
       
       if (data.success) {
         setUserData(data.user);
@@ -108,7 +108,7 @@ export const AppContextProvider = (props) => {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log("enrolled courses",data)
+      // console.log("enrolled courses",data)
       if (data.success) {
         setEnrolledCourses(data.enrolledCourses.reverse());
       } else {

@@ -31,7 +31,7 @@ const Player = () => {
   const getCourseData = () => {
     enrolledCourses.map((course) => {
       if (course._id === courseId) {
-        console.log("Course Data:", course); // Debugging log
+        // console.log("Course Data:", course); // Debugging log
         setCourseData(course);
         if (course.courseContent) {
           course.courseRatings?.map((item) => {
@@ -74,7 +74,7 @@ const Player = () => {
       );
       if (data.success) {
         setProgressData(data.progressData);
-        console.log("Progress Data:", data.progressData); // Debugging log
+        // console.log("Progress Data:", data.progressData); // Debugging log
         toast.success(data.message, {
           position: "top-right",
           autoClose: 2000,

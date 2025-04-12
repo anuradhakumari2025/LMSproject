@@ -7,23 +7,22 @@ import axios from "axios";
 import { Bounce } from "react-toastify";
 
 const Dashboard = () => {
-  const { currency,backendUrl,getToken,isEducator } = useContext(AppContext);
+  const { currency, backendUrl, getToken, isEducator } = useContext(AppContext);
   const [dashboardData, setDashboardData] = useState(null);
 
-  const fetchDashboardData =async () => {
+  const fetchDashboardData = async () => {
     try {
-      const token =await getToken();
+      const token = await getToken();
       // console.log("token",token)
-      const {data} = await axios.get(`${backendUrl}/api/educator/dashboard`, {
+      const { data } = await axios.get(`${backendUrl}/api/educator/dashboard`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log(data)
-      if(data.success) {
+      // console.log(data)
+      if (data.success) {
         setDashboardData(data.dashBoardData);
-      }
-      else {
+      } else {
         toast.error(data.message, {
           position: "top-right",
           autoClose: 5000,
