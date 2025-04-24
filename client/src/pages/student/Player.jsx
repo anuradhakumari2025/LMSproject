@@ -12,12 +12,12 @@ import Loading from "../../components/student/Loading";
 import axios from "axios";
 
 const Player = () => {
-  const [courseData, setCourseData] = useState(null);
-  const { courseId } = useParams();
-  const [openSection, setOpenSection] = useState({});
-  const [playerData, setPlayerData] = useState(null);
-  const [progressData, setProgressData] = useState(null);
-  const [initialRating, setInitialRating] = useState(0);
+  const [courseData, setCourseData] = useState(null); // Holds the course data
+  const { courseId } = useParams(); // Gets the course ID from the URL params
+  const [openSection, setOpenSection] = useState({}); // Manages open/close state for course sections
+  const [playerData, setPlayerData] = useState(null); // Holds the current lecture/player data
+  const [progressData, setProgressData] = useState(null); // Holds the progress data for the course
+  const [initialRating, setInitialRating] = useState(0); // Holds the initial rating for the course
 
   const {
     calculateChapterTime,
@@ -26,17 +26,17 @@ const Player = () => {
     getToken,
     userData,
     fetchUserEnrolledCourses,
-  } = useContext(AppContext);
+  } = useContext(AppContext); // Extracts values and functions from context
 
+  // Function to fetch course data based on course ID
   const getCourseData = () => {
     enrolledCourses.map((course) => {
       if (course._id === courseId) {
-        // console.log("Course Data:", course); // Debugging log
-        setCourseData(course);
+        setCourseData(course); // Set the course data
         if (course.courseContent) {
           course.courseRatings?.map((item) => {
             if (item.userId === userData._id) {
-              setInitialRating(item.rating);
+              setInitialRating(item.rating); // Set the initial rating for the course
             }
           });
         } else {
@@ -46,23 +46,27 @@ const Player = () => {
     });
   };
 
+  // Toggles the open/close state for sections
   const toggleFunction = (index) => {
     setOpenSection((prev) => ({ ...prev, [index]: !prev[index] }));
   };
 
+  // Fetch user enrolled courses when component mounts
   useEffect(() => {
     fetchUserEnrolledCourses(); // Fetch the latest enrolled courses
   }, []);
 
+  // Get the course data after enrolled courses are fetched
   useEffect(() => {
     if (enrolledCourses.length > 0) {
       getCourseData();
     }
   }, [enrolledCourses]);
 
+  // Function to fetch course progress
   const getCourseProgress = async () => {
     try {
-      const token = await getToken();
+      const token = await getToken(); // Get the user token for authorization
       const { data } = await axios.post(
         `${backendUrl}/api/user/get-course-progress`,
         { courseId },
@@ -73,8 +77,7 @@ const Player = () => {
         }
       );
       if (data.success) {
-        setProgressData(data.progressData);
-        // console.log("Progress Data:", data.progressData); // Debugging log
+        setProgressData(data.progressData); // Set progress data
         toast.success(data.message, {
           position: "top-right",
           autoClose: 2000,
@@ -115,6 +118,7 @@ const Player = () => {
     }
   };
 
+  // Function to mark a lecture as completed
   const markLectureAsCompleted = async (lectureId) => {
     try {
       const token = await getToken();
@@ -139,7 +143,7 @@ const Player = () => {
           theme: "dark",
           transition: Bounce,
         });
-        getCourseProgress();
+        getCourseProgress(); // Fetch the updated course progress
       } else {
         toast.error(data.message, {
           position: "top-right",
@@ -169,6 +173,7 @@ const Player = () => {
     }
   };
 
+  // Function to handle course rating submission
   const handleRating = async (rating) => {
     try {
       const token = await getToken();
@@ -196,7 +201,7 @@ const Player = () => {
           theme: "dark",
           transition: Bounce,
         });
-        fetchUserEnrolledCourses();
+        fetchUserEnrolledCourses(); // Refresh the list of enrolled courses
       } else {
         toast.error(data.message, {
           position: "top-right",
@@ -227,7 +232,7 @@ const Player = () => {
   };
 
   useEffect(() => {
-    getCourseProgress();
+    getCourseProgress(); // Fetch course progress when component mounts
   }, []);
 
   return courseData ? (

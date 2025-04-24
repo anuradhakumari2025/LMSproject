@@ -1,28 +1,32 @@
 import React, { useContext, useEffect, useState } from "react";
-import { AppContext } from "../../context/AppContext";
-import { assets, dummyDashboardData } from "../../assets/assets";
-import Loading from "../../components/student/Loading";
-import { toast } from "react-toastify";
-import axios from "axios";
-import { Bounce } from "react-toastify";
+import { AppContext } from "../../context/AppContext"; // Import context for app-wide data
+import { assets, dummyDashboardData } from "../../assets/assets"; // Import assets and dummy data
+import Loading from "../../components/student/Loading"; // Import loading spinner component
+import { toast } from "react-toastify"; // Import toast notifications
+import axios from "axios"; // Import axios for making API requests
 
 const Dashboard = () => {
+  // Destructuring required values from AppContext
   const { currency, backendUrl, getToken, isEducator } = useContext(AppContext);
+
+  // State to hold the dashboard data
   const [dashboardData, setDashboardData] = useState(null);
 
+  // Function to fetch dashboard data from the backend
   const fetchDashboardData = async () => {
     try {
-      const token = await getToken();
-      // console.log("token",token)
+      const token = await getToken(); // Get token from context for authorization
+      // Making API request to fetch dashboard data
       const { data } = await axios.get(`${backendUrl}/api/educator/dashboard`, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`, // Adding token in headers for authorization
         },
       });
-      // console.log(data)
+      // Checking if data fetch was successful
       if (data.success) {
-        setDashboardData(data.dashBoardData);
+        setDashboardData(data.dashBoardData); // Setting the fetched data in state
       } else {
+        // Displaying error message if fetch fails
         toast.error(data.message, {
           position: "top-right",
           autoClose: 5000,
@@ -35,7 +39,7 @@ const Dashboard = () => {
         });
       }
     } catch (error) {
-      console.log(error);
+      console.log(error); // Logging the error
       toast.error(error.message, {
         position: "top-right",
         autoClose: 5000,
@@ -48,17 +52,22 @@ const Dashboard = () => {
       });
     }
   };
+
+  // useEffect to fetch data when the component mounts or isEducator changes
   useEffect(() => {
     if (isEducator) {
-      fetchDashboardData();
+      fetchDashboardData(); // Fetch data if the user is an educator
     }
   }, [isEducator]);
+
+  // If dashboardData is available, render the dashboard, else show loading
   return dashboardData ? (
     <div className="min-h-screen flex flex-col items-start justify-between gap-8 md:p-8 md:pb-0 pt-8 pb-0 bg-slate-600">
       <div className="space-y-3">
+        {/* Displaying summary data cards */}
         <div className="flex flex-wrap gap-5 items-center">
           <div className="flex items-center gap-3 shadow-md text-white shadow-gray-400 border-2 border-blue-500 p-4 w-60 rounded-md bg-slate-800">
-            <img src={assets.patients_icon} alt="" />
+            <img src={assets.patients_icon} alt="" /> {/* Icon for enrolled students */}
             <div>
               <p className="text-2xl  font-medium text-gray-100">
                 {dashboardData.enrolledStudentsData.length}
@@ -67,7 +76,7 @@ const Dashboard = () => {
             </div>
           </div>
           <div className="flex items-center gap-3 shadow-md text-white shadow-gray-400 border-2 border-blue-500 p-4 w-60 rounded-md bg-slate-800">
-            <img src={assets.appointments_icon} alt="" />
+            <img src={assets.appointments_icon} alt="" /> {/* Icon for total courses */}
             <div>
               <p className="text-2xl  font-medium text-gray-100">
                 {dashboardData.totalCourses}
@@ -76,7 +85,7 @@ const Dashboard = () => {
             </div>
           </div>
           <div className="flex items-center gap-3 shadow-md text-white shadow-gray-400 border-2 border-blue-500 p-4 w-60 rounded-md bg-slate-800">
-            <img src={assets.earning_icon} alt="" />
+            <img src={assets.earning_icon} alt="" /> {/* Icon for total earnings */}
             <div>
               <p className="text-2xl  font-medium text-gray-100">
                 {currency} {dashboardData.totalEarnings}
@@ -86,6 +95,7 @@ const Dashboard = () => {
           </div>
         </div>
 
+        {/* Displaying the latest enrollments */}
         <div className="my-6">
           <h2 className="pb-6 text-xl font-medium text-white">
             Latest Enrolments
@@ -102,10 +112,11 @@ const Dashboard = () => {
                 </tr>
               </thead>
               <tbody className="text-sm text-gray-300">
+                {/* Loop through the enrolled students data */}
                 {dashboardData.enrolledStudentsData.map((item, index) => (
                   <tr key={index} className="border-b border-gray-400">
                     <td className="px-4 py-3 text-center hidden sm:table-cell">
-                      {index + 1}
+                      {index + 1} {/* Display the row number */}
                     </td>
                     <td className="md:px-4 px-2 py-3 flex items-center space-x-3">
                       <img
@@ -125,6 +136,7 @@ const Dashboard = () => {
       </div>
     </div>
   ) : (
+    // If no dashboardData, show loading spinner
     <Loading />
   );
 };
